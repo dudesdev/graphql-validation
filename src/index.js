@@ -6,6 +6,15 @@ validatorKeys.push('contains', 'equals', 'matches');
 
 let errors = {};
 
+function convertToErrorList(error = {}) {
+  const keys = Object.keys(error);
+  const allError = [];
+  for (let i = 0; i < keys.length; i++) {
+    allError.push(error[keys[i]]);
+  }
+  return allError;
+}
+
 module.exports = {
   validator(rules, next) {
     const middleware = (parent, args, context, info) => {
@@ -17,6 +26,7 @@ module.exports = {
         const ctx = context;
         delete errors.hasError
         ctx.validationErrors = errors;
+        ctx.validationErrorsList = convertToErrorList(errors);
         errors = {};
       }
 
