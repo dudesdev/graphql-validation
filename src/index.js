@@ -8,11 +8,11 @@ let errors = {};
 
 function convertToErrorList(error = {}) {
   const keys = Object.keys(error);
-  const allError = [];
+  const allErrors = [];
   for (let i = 0; i < keys.length; i++) {
-    allError.push(error[keys[i]]);
+    allErrors.push(error[keys[i]]);
   }
-  return allError;
+  return allErrors;
 }
 
 module.exports = {
