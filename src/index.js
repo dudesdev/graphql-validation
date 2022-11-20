@@ -15,6 +15,7 @@ module.exports = {
 
       if (errors.hasError) {
         const ctx = context;
+        delete errors.hasError
         ctx.validationErrors = errors;
         errors = {};
       }
