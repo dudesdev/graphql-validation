@@ -10,7 +10,11 @@ function convertToErrorList(error = {}) {
   const keys = Object.keys(error);
   const allErrors = [];
   for (let i = 0; i < keys.length; i++) {
-    allErrors.push(error[keys[i]]);
+    if (Array.isArray(error[keys[i]])) {
+      allErrors.push(...error[keys[i]]);
+    } else {
+      allErrors.push(error[keys[i]]);
+    }
   }
   return allErrors;
 }
