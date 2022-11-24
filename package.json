@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/wiicamp/graphql-validation#readme",
   "dependencies": {
-    "validator": "^13.1.1"
+    "validator": "^13.7.0"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
