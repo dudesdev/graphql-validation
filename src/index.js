@@ -40,7 +40,7 @@ module.exports = {
     return middleware;
   },
 
-  validate(param, input) {
+  validate(param, ...input) {
     const obj = {
       callbackFuncs: [],
       isNegateNext: false,
@@ -55,7 +55,16 @@ module.exports = {
           return this;
         },
         exec(args) {
-          const params = input ? args[input] : args;
+          var current = args;
+          for(let i = 0; i < input.length; i++) {
+              if(current[input[i]]) {
+                  current = current[input[i]];
+              } else {
+                  return null;
+              }
+          }
+
+          const params = current ? current : args;
 
           obj.callbackFuncs.forEach((func) => {
             func(params);
