@@ -19,6 +19,71 @@ function convertToErrorList(error = {}) {
   return allErrors;
 }
 
+function validateParams(isOptional = false , param, input) {
+  const obj = {
+    callbackFuncs: [],
+    isNegateNext: false,
+    isOptional,
+    methods: {
+      not() {
+        const func = () => {
+          obj.isNegateNext = true;
+        };
+
+        obj.callbackFuncs.push(func);
+
+        return this;
+      },
+      exec(args) {
+        var current = args;
+        for(let i = 0; i < input.length; i++) {
+            if(current[input[i]]) {
+                current = current[input[i]];
+            } else {
+                return null;
+            }
+        }
+
+        const params = current ? current : args;
+
+        obj.callbackFuncs.forEach((func) => {
+          func(params);
+        });
+      },
+    },
+  };
+
+  validatorKeys.forEach((key) => {
+    obj.methods[key] = function (config = {}) {
+      const func = (args = { [param]: '' }) => {
+        if (obj.isOptional && !args[param]) {
+          obj.isNegateNext = false;
+          return
+        }
+        const validationResult = validatorJS[key](`${args[param]}`, config.options);
+        const isError = !obj.isNegateNext ? !validationResult : validationResult;
+
+        if (isError) {
+          const msg = config.msg || 'Invalid value'
+          if (errors[param]) {
+            errors[param].push(msg)
+          }
+          else {
+            errors[param] = [msg];
+          }
+          errors.hasError = true;
+        }
+
+        obj.isNegateNext = false;
+      };
+
+      obj.callbackFuncs.push(func);
+      return obj.methods;
+    };
+  });
+  return obj.methods;
+}
+
 module.exports = {
   validator(rules, next) {
     const middleware = (parent, args, context, info) => {
@@ -39,66 +104,10 @@ module.exports = {
 
     return middleware;
   },
-
   validate(param, ...input) {
-    const obj = {
-      callbackFuncs: [],
-      isNegateNext: false,
-      methods: {
-        not() {
-          const func = () => {
-            obj.isNegateNext = true;
-          };
-
-          obj.callbackFuncs.push(func);
-
-          return this;
-        },
-        exec(args) {
-          var current = args;
-          for(let i = 0; i < input.length; i++) {
-              if(current[input[i]]) {
-                  current = current[input[i]];
-              } else {
-                  return null;
-              }
-          }
-
-          const params = current ? current : args;
-
-          obj.callbackFuncs.forEach((func) => {
-            func(params);
-          });
-        },
-      },
-    };
-
-    validatorKeys.forEach((key) => {
-      obj.methods[key] = function (config = {}) {
-        const func = (args = { [param]: '' }) => {
-          const validationResult = validatorJS[key](`${args[param]}`, config.options);
-          const isError = !obj.isNegateNext ? !validationResult : validationResult;
-
-          if (isError) {
-            const msg = config.msg || 'Invalid value'
-            if (errors[param]) {
-              errors[param].push(msg)
-            }
-            else {
-              errors[param] = [msg];
-            }
-            errors.hasError = true;
-          }
-
-          obj.isNegateNext = false;
-        };
-
-        obj.callbackFuncs.push(func);
-
-        return obj.methods;
-      };
-    });
-
-    return obj.methods;
+    return validateParams(false , param, input)
+  },
+  validateOptional(param, ...input) {
+    return validateParams(true , param, input)
   },
 };
